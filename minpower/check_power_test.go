@@ -1,19 +1,27 @@
 package minpower
 
-import "testing"
+import (
+	"context"
+	"math/big"
+	"testing"
 
-func TestReverseRunes(t *testing.T) {
-    cases := []struct {
-        in, want string
-    }{
-        {"Hello, world", "dlrow ,olleH"},
-        {"Hello, 世界", "界世 ,olleH"},
-        {"", ""},
-    }
-    for _, c := range cases {
-        got := ReverseRunes(c.in)
-        if got != c.want {
-            t.Errorf("ReverseRunes(%q) == %q, want %q", c.in, got, c.want)
-        }
-    }
+	"github.com/stretchr/testify/assert"
+)
+
+func TestMinPower(t *testing.T) {
+	min, ok := new(big.Int).SetString("10995116277760", 10) // 10TiB = 10 * 1024^4
+	assert.True(t, ok)
+
+	cases := []struct {
+		in   string
+		want bool
+	}{
+		{"f01000", false},
+		{"f02620", true},
+	}
+	for _, c := range cases {
+		ok, err := MinQualityPowerOk(context.Background(), c.in, min)
+		assert.Equal(t, c.want, ok)
+		assert.Nil(t, err)
+	}
 }

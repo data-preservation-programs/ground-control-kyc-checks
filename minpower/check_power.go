@@ -3,6 +3,7 @@ package minpower
 import (
 	"context"
 	"log"
+	"math/big"
 	"net/http"
 
 	"github.com/filecoin-project/go-address"
@@ -10,15 +11,6 @@ import (
 	lotusapi "github.com/filecoin-project/lotus/api"
 	"github.com/filecoin-project/lotus/chain/types"
 )
-
-// ReverseRunes returns its argument string reversed rune-wise left to right.
-func ReverseRunes(s string) string {
-	r := []rune(s)
-	for i, j := 0, len(r)-1; i < len(r)/2; i, j = i+1, j-1 {
-		r[i], r[j] = r[j], r[i]
-	}
-	return string(r)
-}
 
 // LookupPower gets the power for the miner from the Lotus API
 func LookupPower(ctx context.Context, miner string) (*lotusapi.MinerPower, error) {
@@ -45,4 +37,18 @@ func LookupPower(ctx context.Context, miner string) (*lotusapi.MinerPower, error
 	}
 	log.Printf("Miner power %s: %v\n", miner, power)
 	return power, nil
+}
+
+// MinQualityPowerOk compares the power from the API for miner against a minimum
+func MinQualityPowerOk(ctx context.Context, miner string, min *big.Int) (bool, error) {
+	power, err := LookupPower(ctx, miner)
+	if err != nil {
+		return false, err
+	}
+	if power.MinerPower.QualityAdjPower.Cmp(min) < 0 {
+		log.Printf("Insufficient power %s: %v < %v\n", miner,
+			power.MinerPower.QualityAdjPower, min)
+		return false, nil
+	}
+	return true, nil
 }
