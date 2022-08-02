@@ -6,4 +6,4 @@ runs:
   entrypoint: /bin/sh
   args:
     - "-c"
-    - "mkdir -p output; (cd /usr/src/app && go testdata/responses-1-pass.json) | tee output/test-results.json"
+    - "mkdir -p output; (cd /usr/src/app && ./sp-kyc-checks testdata/responses-1-pass.json) | tee output/test-results.json"
