@@ -9,4 +9,4 @@ runs:
   entrypoint: /bin/sh
   args:
     - "-c"
-    - "mkdir -p output; (cd /usr/src/app && ./sp-kyc-checks /github/workspace/output/google-form-responses.json) | tee output/test-results.json"
+    - "mkdir -p output; (cd /usr/src/app && ./sp-kyc-checks ${{ inputs.google-form-responses }}) | tee output/test-results.json"
