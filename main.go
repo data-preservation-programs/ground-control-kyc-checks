@@ -75,11 +75,15 @@ func main() {
 		*/
 		log.Println()
 	}
-	jsonData, err := json.MarshalIndent(responseResults, "", "  ")
-	if err != nil {
-		log.Fatalln("Json marshal error", err)
+	if len(responseResults) == 0 {
+		fmt.Println("[]")
+	} else {
+		jsonData, err := json.MarshalIndent(responseResults, "", "  ")
+		if err != nil {
+			log.Fatalln("Json marshal error", err)
+		}
+		fmt.Println(string(jsonData))
 	}
-	fmt.Println(string(jsonData))
 }
 
 type TestOutput struct {
