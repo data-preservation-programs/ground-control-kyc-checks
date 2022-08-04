@@ -40,7 +40,7 @@ func main() {
 	var responseResults []ResponseResult
 
 	for num, response := range responses {
-		log.Printf("Response %d:\n", num)
+		log.Printf("Response %d:\n", num + 1)
 		for key, value := range response {
 			log.Println(" ", key, value)
 		}
