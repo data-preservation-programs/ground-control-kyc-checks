@@ -52,7 +52,7 @@ func main() {
 				break
 			}
 			city := response[fmt.Sprintf("%d_city", i)]
-			countrycode := response[fmt.Sprintf("%d_country_code", i)]
+			countrycode := response[fmt.Sprintf("%d_country", i)]
 			log.Printf("Miner %d: %s - %s, %s\n", i, minerID, city, countrycode)
 			miner := Miner{minerID, city, countrycode}
 			success, testOutput, err := test_miner(context.Background(), miner)
