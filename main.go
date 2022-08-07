@@ -43,6 +43,11 @@ func main() {
 	var responses []map[string]string
 	json.Unmarshal(responsesJsonBytes, &responses)
 
+	if len(responses) == 0 {
+		fmt.Println("[]")
+		os.Exit(0)
+	}
+
 	var responseResults []ResponseResult
 
 	// Download location data
@@ -79,24 +84,13 @@ func main() {
 		}
 		responseResult := ResponseResult{response, minerChecks}
 		responseResults = append(responseResults, responseResult)
-		/*
-			jsonData, err := json.MarshalIndent(minerChecks, "", "  ")
-			if err != nil {
-				log.Fatalln("Json marshal error", err)
-			}
-			fmt.Printf("JSON: %v\n", string(jsonData))
-		*/
 		log.Println()
 	}
-	if len(responseResults) == 0 {
-		fmt.Println("[]")
-	} else {
-		jsonData, err := json.MarshalIndent(responseResults, "", "  ")
-		if err != nil {
-			log.Fatalln("Json marshal error", err)
-		}
-		fmt.Println(string(jsonData))
+	jsonData, err := json.MarshalIndent(responseResults, "", "  ")
+	if err != nil {
+		log.Fatalln("Json marshal error", err)
 	}
+	fmt.Println(string(jsonData))
 }
 
 func download_location_data(ctx context.Context) error {
@@ -120,18 +114,22 @@ func download_location_data(ctx context.Context) error {
 			return err
 		}
 		base := path.Base(u.Path)
-		log.Printf("Downloading %s ...\n", base)
-		resp, err := http.Get(dataUrl)
-		if err != nil {
-			return err
+		dest := path.Join(downloadsDir, base)
+
+		if _, err := os.Stat(dest); errors.Is(err, os.ErrNotExist) {
+			log.Printf("Downloading %s ...\n", base)
+			resp, err := http.Get(dataUrl)
+			if err != nil {
+				return err
+			}
+			defer resp.Body.Close()
+			out, err := os.Create(path.Join(downloadsDir, dest))
+			if err != nil {
+				return err
+			}
+			defer out.Close()
+			io.Copy(out, resp.Body)
 		}
-		defer resp.Body.Close()
-		out, err := os.Create(path.Join(downloadsDir, base))
-		if err != nil {
-			return err
-		}
-		defer out.Close()
-		io.Copy(out, resp.Body)
 	}
 	return nil
 }
