@@ -3,10 +3,15 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
 	"log"
+	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
+	"path"
 	"strings"
 )
 
@@ -29,6 +34,7 @@ type ResponseResult struct {
 }
 
 func main() {
+	// Load Google Form responses from data file
 	responsesFile := os.Args[1]
 	responsesJsonBytes, err := os.ReadFile(responsesFile)
 	if err != nil {
@@ -39,8 +45,15 @@ func main() {
 
 	var responseResults []ResponseResult
 
+	// Download location data
+	err = download_location_data(context.Background())
+	if err != nil {
+		log.Fatalln("Failed downloading location data", err)
+	}
+
+	// Loop over responses and miners and run checks
 	for num, response := range responses {
-		log.Printf("Response %d:\n", num + 1)
+		log.Printf("Response %d:\n", num+1)
 		for key, value := range response {
 			log.Println(" ", key, value)
 		}
@@ -84,6 +97,43 @@ func main() {
 		}
 		fmt.Println(string(jsonData))
 	}
+}
+
+func download_location_data(ctx context.Context) error {
+	downloadsDir := "downloads"
+	if _, err := os.Stat(downloadsDir); errors.Is(err, os.ErrNotExist) {
+		err := os.Mkdir(downloadsDir, os.ModePerm)
+		if err != nil {
+			return err
+		}
+	}
+
+	urls := []string{
+		"https://multiaddrs-ips.feeds.provider.quest/multiaddrs-ips-latest.json",
+		"https://geoip.feeds.provider.quest/ips-geolite2-latest.json",
+		"https://geoip.feeds.provider.quest/ips-baidu-latest.json",
+	}
+
+	for _, dataUrl := range urls {
+		u, err := url.Parse(dataUrl)
+		if err != nil {
+			return err
+		}
+		base := path.Base(u.Path)
+		log.Printf("Downloading %s ...\n", base)
+		resp, err := http.Get(dataUrl)
+		if err != nil {
+			return err
+		}
+		defer resp.Body.Close()
+		out, err := os.Create(path.Join(downloadsDir, base))
+		if err != nil {
+			return err
+		}
+		defer out.Close()
+		io.Copy(out, resp.Body)
+	}
+	return nil
 }
 
 type TestOutput struct {
