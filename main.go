@@ -123,7 +123,7 @@ func download_location_data(ctx context.Context) error {
 				return err
 			}
 			defer resp.Body.Close()
-			out, err := os.Create(path.Join(downloadsDir, dest))
+			out, err := os.Create(dest)
 			if err != nil {
 				return err
 			}
