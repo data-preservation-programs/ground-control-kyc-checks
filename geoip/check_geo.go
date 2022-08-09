@@ -1,29 +1,13 @@
 package geoip
 
 import (
-	"encoding/json"
 	"fmt"
-	"os"
+	"log"
 )
 
-type MultiaddrsIPsReport struct {
-	Date          *string
-	MultiaddrsIPs []MultiaddrsIPsRecord
-}
-
-type MultiaddrsIPsRecord struct {
-	Miner     string `json:"miner"`
-	Maddr     string `json:"maddr"`
-	PeerID    string `json:"peerId"`
-	IP        string `json:"ip"`
-	Epoch     uint   `json:"epoch"`
-	Timestamp string `json:"timestamp"`
-	DHT       bool   `json:"dht"`
-	Chain     bool   `json:"chain"`
-}
-
 type GeoData struct {
-	multiaddrsIPs []MultiaddrsIPsRecord
+	MultiaddrsIPs []MultiaddrsIPsRecord
+	IPsGeolite2   map[string]IPsGeolite2Record
 }
 
 func LoadGeoData() (*GeoData, error) {
@@ -31,40 +15,52 @@ func LoadGeoData() (*GeoData, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	ipsGeolite2, err := LoadIPsGeolite2()
+	if err != nil {
+		return nil, err
+	}
+
 	return &GeoData{
 		multiaddrsIPs,
+		ipsGeolite2,
 	}, nil
 }
 
 func (g *GeoData) filterByMinerID(minerID string) *GeoData {
 	multiaddrsIPs := []MultiaddrsIPsRecord{}
-	for _, m := range g.multiaddrsIPs {
+	ipsGeoLite2 := make(map[string]IPsGeolite2Record)
+	for _, m := range g.MultiaddrsIPs {
 		if m.Miner == minerID {
 			multiaddrsIPs = append(multiaddrsIPs, m)
+			if r, ok := g.IPsGeolite2[m.IP]; ok {
+				ipsGeoLite2[m.IP] = r
+			}
 		}
 	}
+
 	return &GeoData{
 		multiaddrsIPs,
+		ipsGeoLite2,
 	}
-}
-
-func LoadMultiAddrsIPs() ([]MultiaddrsIPsRecord, error) {
-	multiaddrsIPsFile := "testdata/multiaddrs-ips-latest.json"
-	multiaddrsIPsBytes, err := os.ReadFile(multiaddrsIPsFile)
-	if err != nil {
-		return nil, err
-	}
-	var multiaddrsIPsReport MultiaddrsIPsReport
-	json.Unmarshal(multiaddrsIPsBytes, &multiaddrsIPsReport)
-	return multiaddrsIPsReport.MultiaddrsIPs, nil
 }
 
 // GeoMatchExists checks if the miner has an IP address with a location close to the city/country
-func GeoMatchExists(geodata *GeoData, minerID string, city string, countryCode string) (bool, error) {
+func GeoMatchExists(geodata *GeoData, minerID string, city string, countryCode string) bool {
 	g := geodata.filterByMinerID(minerID)
-	for i, v := range g.multiaddrsIPs {
+	for i, v := range g.MultiaddrsIPs {
 		fmt.Println("Jim1", i, v)
 	}
+	fmt.Println("Jim2", g.IPsGeolite2)
 
-	return true, nil
+	var match_found bool
+	for ip, geolite2 := range g.IPsGeolite2 {
+		if geolite2.Country == countryCode {
+			log.Printf("Matching country for %s (%s, %s) found, IP: %s (%s)\n",
+				minerID, city, countryCode, ip, geolite2.Country)
+			match_found = true
+		}
+	}
+
+	return match_found
 }

@@ -21,12 +21,21 @@ func TestGeoMatchExists(t *testing.T) {
 
 	cases := make([]TestCase, 0)
 	if minerID == "" {
-		cases = append(cases, TestCase{
-			minerID:     "f02620",
-			city:        "Krakow",
-			countryCode: "PL",
-			want:        true,
-		})
+		cases = append(
+			cases,
+			TestCase{
+				minerID:     "f02620",
+				city:        "Warsaw",
+				countryCode: "PL",
+				want:        true,
+			},
+			TestCase{
+				minerID:     "f02620",
+				city:        "Toronto",
+				countryCode: "CA",
+				want:        false,
+			},
+		)
 	} else {
 		cases = append(cases, TestCase{minerID, city, countryCode, true})
 	}
@@ -34,9 +43,10 @@ func TestGeoMatchExists(t *testing.T) {
 	geodata, err := LoadGeoData()
 	assert.Nil(t, err)
 
+	// FIXME: Filter by date
+
 	for _, c := range cases {
-		ok, err := GeoMatchExists(geodata, c.minerID, c.city, c.countryCode)
+		ok := GeoMatchExists(geodata, c.minerID, c.city, c.countryCode)
 		assert.Equal(t, c.want, ok)
-		assert.Nil(t, err)
 	}
 }
