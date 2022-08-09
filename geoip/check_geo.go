@@ -1,7 +1,6 @@
 package geoip
 
 import (
-	"fmt"
 	"log"
 )
 
@@ -48,17 +47,20 @@ func (g *GeoData) filterByMinerID(minerID string) *GeoData {
 // GeoMatchExists checks if the miner has an IP address with a location close to the city/country
 func GeoMatchExists(geodata *GeoData, minerID string, city string, countryCode string) bool {
 	g := geodata.filterByMinerID(minerID)
-	for i, v := range g.MultiaddrsIPs {
-		fmt.Println("Jim1", i, v)
-	}
-	fmt.Println("Jim2", g.IPsGeolite2)
 
-	var match_found bool
+	var match_found bool = false
 	for ip, geolite2 := range g.IPsGeolite2 {
-		if geolite2.Country == countryCode {
-			log.Printf("Matching country for %s (%s, %s) found, IP: %s (%s)\n",
-				minerID, city, countryCode, ip, geolite2.Country)
+		if geolite2.Country != countryCode {
+			continue
+		}
+		log.Printf("Matching country for %s (%s) found, IP: %s\n",
+			minerID, countryCode, ip)
+
+		if geolite2.City == city {
+			log.Printf("Matching city for %s (%s) found, IP: %s\n",
+				minerID, city, ip)
 			match_found = true
+			continue
 		}
 	}
 
