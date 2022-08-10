@@ -50,18 +50,22 @@ func GeoMatchExists(geodata *GeoData, minerID string, city string, countryCode s
 
 	var match_found bool = false
 	for ip, geolite2 := range g.IPsGeolite2 {
+		// Match country
 		if geolite2.Country != countryCode {
 			continue
 		}
 		log.Printf("Matching country for %s (%s) found, IP: %s\n",
 			minerID, countryCode, ip)
 
+		// Try to match city
 		if geolite2.City == city {
 			log.Printf("Matching city for %s (%s) found, IP: %s\n",
 				minerID, city, ip)
 			match_found = true
 			continue
 		}
+
+		// Distance based matching
 	}
 
 	return match_found
