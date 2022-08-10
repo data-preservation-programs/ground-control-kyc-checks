@@ -1,4 +1,4 @@
-package main
+package testrig
 
 import (
 	"context"
@@ -33,19 +33,16 @@ type ResponseResult struct {
 	MinerCheckResults []MinerCheckResult
 }
 
-func main() {
-	// Load Google Form responses from data file
-	responsesFile := os.Args[1]
-	responsesJsonBytes, err := os.ReadFile(responsesFile)
+func RunChecksForFormResponses(ctx context.Context, filename string) (string, error) {
+	responsesJsonBytes, err := os.ReadFile(filename)
 	if err != nil {
-		log.Fatalln("Could not load responses from", responsesFile)
+		return "", err
 	}
 	var responses []map[string]string
 	json.Unmarshal(responsesJsonBytes, &responses)
 
 	if len(responses) == 0 {
-		fmt.Println("[]")
-		os.Exit(0)
+		return "[]", nil
 	}
 
 	var responseResults []ResponseResult
@@ -53,7 +50,7 @@ func main() {
 	// Download location data
 	err = download_location_data(context.Background())
 	if err != nil {
-		log.Fatalln("Failed downloading location data", err)
+		return "", fmt.Errorf("failed downloading location data: %w", err)
 	}
 
 	// Loop over responses and miners and run checks
@@ -73,7 +70,7 @@ func main() {
 			countrycode := response[fmt.Sprintf("%d_country", i)]
 			log.Printf("Miner %d: %s - %s, %s\n", i, minerID, city, countrycode)
 			miner := Miner{minerID, city, countrycode}
-			success, testOutput, err := test_miner(context.Background(), miner)
+			success, testOutput, err := test_miner(ctx, miner)
 			log.Printf("Result: %v\n", success)
 			if err != nil {
 				log.Printf("Error: %v\n", err)
@@ -88,9 +85,9 @@ func main() {
 	}
 	jsonData, err := json.MarshalIndent(responseResults, "", "  ")
 	if err != nil {
-		log.Fatalln("Json marshal error", err)
+		return "", fmt.Errorf("JSON marshal error: %w", err)
 	}
-	fmt.Println(string(jsonData))
+	return string(jsonData), nil
 }
 
 func download_location_data(ctx context.Context) error {
