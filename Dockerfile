@@ -14,15 +14,14 @@ COPY go.sum ./
 
 RUN go mod download
 
-COPY *.go ./
-
+COPY cmd ./cmd
+COPY internal ./internal
 COPY testdata ./testdata
 COPY minpower ./minpower
+COPY geoip ./geoip
 
-RUN go build
+RUN go build -o sp-kyc-checks cmd/main.go 
 
-WORKDIR /usr/src/app/minpower
-RUN go test
-WORKDIR /usr/src/app
+RUN go test ./...
 
 CMD /usr/src/app/sp-kyc-checks testdata/responses-1-pass.json | tee test-results.json
