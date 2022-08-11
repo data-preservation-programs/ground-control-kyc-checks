@@ -16,9 +16,9 @@ import (
 )
 
 type Miner struct {
-	MinerID    string
-	City       string
-	CountyCode string
+	MinerID     string
+	City        string
+	CountryCode string
 }
 
 type MinerCheckResult struct {
@@ -140,11 +140,18 @@ type TestOutput struct {
 }
 
 func test_miner(ctx context.Context, miner Miner) (bool, []TestOutput, error) {
-	cmd := exec.CommandContext(ctx, "go", "test", "./minpower", "-json")
+	cmd := exec.CommandContext(
+		ctx,
+		"go",
+		"test",
+		"./minpower",
+		"./geoip",
+		"-json",
+	)
 	cmd.Env = append(os.Environ(),
 		fmt.Sprintf("MINER_ID=%s", miner.MinerID),
 		fmt.Sprintf("CITY=%s", miner.City),
-		fmt.Sprintf("COUNTY_CODE=%s", miner.CountyCode),
+		fmt.Sprintf("COUNTRY_CODE=%s", miner.CountryCode),
 	)
 	out, err := cmd.Output()
 	lines := strings.Split(string(out), "\n")

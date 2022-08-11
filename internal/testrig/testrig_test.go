@@ -11,11 +11,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type TestCase struct {
-	responsesFile string
-	wantPass      bool
-}
-
 func runTestFile(testFile string) []ResponseResult {
 	fmt.Printf("Testing %s\n", testFile)
 	file := fmt.Sprintf("testdata/%s.json", testFile)
