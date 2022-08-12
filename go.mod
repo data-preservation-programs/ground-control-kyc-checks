@@ -8,6 +8,7 @@ require (
 	github.com/filecoin-project/lotus v1.16.1
 	github.com/stretchr/testify v1.7.1
 	googlemaps.github.io/maps v1.3.2
+	github.com/jftuga/geodist v1.0.0
 )
 
 require (
@@ -85,6 +86,7 @@ require (
 	github.com/ipld/go-ipld-prime v0.16.0 // indirect
 	github.com/jbenet/goprocess v0.1.4 // indirect
 	github.com/jessevdk/go-flags v1.4.0 // indirect
+	github.com/jftuga/geodist v1.0.0 // indirect
 	github.com/jpillora/backoff v1.0.0 // indirect
 	github.com/klauspost/cpuid/v2 v2.0.12 // indirect
 	github.com/libp2p/go-buffer-pool v0.0.2 // indirect
@@ -143,7 +145,6 @@ require (
 	golang.org/x/tools v0.1.10 // indirect
 	golang.org/x/xerrors v0.0.0-20220411194840-2f41105eb62f // indirect
 	google.golang.org/protobuf v1.28.0 // indirect
-	googlemaps.github.io/maps v1.3.2 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 	lukechampine.com/blake3 v1.1.7 // indirect
 )

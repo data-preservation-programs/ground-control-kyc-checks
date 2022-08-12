@@ -6,8 +6,11 @@ import (
 	"log"
 	"os"
 
+	"github.com/jftuga/geodist"
 	"googlemaps.github.io/maps"
 )
+
+const MAX_DISTANCE = 500
 
 type GeoData struct {
 	MultiaddrsIPs []MultiaddrsIPsRecord
@@ -31,15 +34,15 @@ func LoadGeoData() (*GeoData, error) {
 	}, nil
 }
 
-func geocodeAddress(address string) ([]maps.LatLng, error) {
+func geocodeAddress(address string) ([]geodist.Coord, error) {
 	key := os.Getenv("GOOGLE_MAPS_API_KEY")
 	if key == "" {
 		log.Println("Warning! Missing GOOGLE_MAPS_API_KEY")
-		return []maps.LatLng{}, nil
+		return []geodist.Coord{}, nil
 	}
 	c, err := maps.NewClient(maps.WithAPIKey(key))
 	if err != nil {
-		return nil, err
+		return []geodist.Coord{}, err
 	}
 
 	r := &maps.GeocodingRequest{
@@ -47,12 +50,16 @@ func geocodeAddress(address string) ([]maps.LatLng, error) {
 	}
 	resp, err := c.Geocode(context.Background(), r)
 	if err != nil {
-		return nil, err
+		return []geodist.Coord{}, err
 	}
 
-	var locations []maps.LatLng
+	var locations []geodist.Coord
 	for _, r := range resp {
-		locations = append(locations, r.Geometry.Location)
+		location := geodist.Coord{
+			Lat: r.Geometry.Location.Lat,
+			Lon: r.Geometry.Location.Lng,
+		}
+		locations = append(locations, location)
 	}
 
 	return locations, nil
@@ -105,9 +112,9 @@ func GeoMatchExists(geodata *GeoData, minerID string, city string, countryCode s
 		}
 
 		l := geolite2.Geolite2["location"].(map[string]interface{})
-		geolite2Location := maps.LatLng{
+		geolite2Location := geodist.Coord{
 			Lat: l["latitude"].(float64),
-			Lng: l["longitude"].(float64),
+			Lon: l["longitude"].(float64),
 		}
 		// log.Printf("Geolite2: %v\n", geolite2.Geolite2["location"])
 		log.Printf("Geolite2 Lat/Lng: %v for IP %s\n", geolite2Location, ip)
@@ -115,6 +122,18 @@ func GeoMatchExists(geodata *GeoData, minerID string, city string, countryCode s
 		for i, location := range locations {
 			log.Printf("Geocoded via Google %s, %s #%d Lat/Long %v", city,
 				countryCode, i+1, location)
+			_, distance, err := geodist.VincentyDistance(location, geolite2Location)
+			if err != nil {
+				log.Println("Unable to compute Vincenty Distance.")
+				continue
+			} else {
+				if distance <= MAX_DISTANCE {
+					log.Printf("Match found! Distance %f km\n", distance)
+					match_found = true
+					continue
+				}
+				log.Printf("No match, distance %f km > %d km\n", distance, MAX_DISTANCE)
+			}
 		}
 	}
 

@@ -36,7 +36,27 @@ func TestGeoMatchExists(t *testing.T) {
 				want:        false,
 			},
 			/*
-				TestCase{
+				TestCase{ // No GeoLite2 city
+					minerID:     "f01660837",
+					city:        "Las Vegas",
+					countryCode: "US",
+					want:        true,
+				},
+			*/
+			TestCase{ // Distance match, 500km
+				minerID:     "f01558688",
+				city:        "Montreal",
+				countryCode: "CA",
+				want:        true,
+			},
+			TestCase{ // More than 500 km
+				minerID:     "f01558688",
+				city:        "Toronto",
+				countryCode: "CA",
+				want:        false,
+			},
+			/*
+				TestCase{ // China
 					minerID:     "f0478563",
 					city:        "Hangzhou",
 					countryCode: "CN",
