@@ -7,6 +7,7 @@ require (
 	github.com/filecoin-project/go-jsonrpc v0.1.6
 	github.com/filecoin-project/lotus v1.16.1
 	github.com/stretchr/testify v1.7.1
+	googlemaps.github.io/maps v1.3.2
 )
 
 require (
@@ -138,9 +139,11 @@ require (
 	golang.org/x/mod v0.6.0-dev.0.20220106191415-9b9b3d81d5e3 // indirect
 	golang.org/x/net v0.0.0-20220418201149-a630d4f3e7a2 // indirect
 	golang.org/x/sys v0.0.0-20220412211240-33da011f77ad // indirect
+	golang.org/x/time v0.0.0-20210723032227-1f47c861a9ac // indirect
 	golang.org/x/tools v0.1.10 // indirect
 	golang.org/x/xerrors v0.0.0-20220411194840-2f41105eb62f // indirect
 	google.golang.org/protobuf v1.28.0 // indirect
+	googlemaps.github.io/maps v1.3.2 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 	lukechampine.com/blake3 v1.1.7 // indirect
 )

@@ -1,0 +1,13 @@
+[
+  {
+    "responseId": "ACYDBNg8yyGgwk051fZNDE5qZHAzZ_5YEfXpKl3XXZunSjsFZN8h2tSQghrDj2w-PK-QbB0",
+    "timestamp": "2022-07-25T08:40:17.905455Z",
+    "0_your_name": "test_name",
+    "0_storage_provider_operator_name": "test_sp_name",
+    "0_your_handle_on_filecoin_io_slack": "test_slack",
+    "0_your_email": "test@example.com",
+    "1_minerid": "f0478563",
+    "1_city": "hangzhou",
+    "1_country": "CN"
+  }
+]

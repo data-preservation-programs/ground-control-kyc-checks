@@ -144,8 +144,8 @@ func test_miner(ctx context.Context, miner Miner) (bool, []TestOutput, error) {
 		ctx,
 		"go",
 		"test",
-		"./minpower",
-		"./geoip",
+		"./checks/minpower",
+		"./checks/geoip",
 		"-json",
 	)
 	cmd.Env = append(os.Environ(),

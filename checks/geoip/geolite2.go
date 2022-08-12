@@ -19,8 +19,10 @@ type IPsGeolite2Record struct {
 	City      string  `json:"city"`
 	Long      float32 `json:"long"`
 	Lat       float32 `json:"lat"`
-	Geolite2  interface{}
+	Geolite2  Geolite2Detail
 }
+
+type Geolite2Detail map[string]interface{}
 
 func LoadIPsGeolite2() (map[string]IPsGeolite2Record, error) {
 	file := "testdata/ips-geolite2-latest.json"

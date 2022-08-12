@@ -1,7 +1,12 @@
 package geoip
 
 import (
+	"context"
+	"fmt"
 	"log"
+	"os"
+
+	"googlemaps.github.io/maps"
 )
 
 type GeoData struct {
@@ -24,6 +29,33 @@ func LoadGeoData() (*GeoData, error) {
 		multiaddrsIPs,
 		ipsGeolite2,
 	}, nil
+}
+
+func geocodeAddress(address string) ([]maps.LatLng, error) {
+	key := os.Getenv("GOOGLE_MAPS_API_KEY")
+	if key == "" {
+		log.Println("Warning! Missing GOOGLE_MAPS_API_KEY")
+		return []maps.LatLng{}, nil
+	}
+	c, err := maps.NewClient(maps.WithAPIKey(key))
+	if err != nil {
+		return nil, err
+	}
+
+	r := &maps.GeocodingRequest{
+		Address: address,
+	}
+	resp, err := c.Geocode(context.Background(), r)
+	if err != nil {
+		return nil, err
+	}
+
+	var locations []maps.LatLng
+	for _, r := range resp {
+		locations = append(locations, r.Geometry.Location)
+	}
+
+	return locations, nil
 }
 
 func (g *GeoData) filterByMinerID(minerID string) *GeoData {
@@ -64,8 +96,26 @@ func GeoMatchExists(geodata *GeoData, minerID string, city string, countryCode s
 			match_found = true
 			continue
 		}
+		log.Printf("No city match for %s (%s != GeoLite2:%s), IP: %s\n",
+			minerID, city, geolite2.City, ip)
 
+		locations, err := geocodeAddress(fmt.Sprintf("%s, %s", city, countryCode))
+		if err != nil {
+			log.Fatalf("Geocode error: %s", err)
+		}
+
+		l := geolite2.Geolite2["location"].(map[string]interface{})
+		geolite2Location := maps.LatLng{
+			Lat: l["latitude"].(float64),
+			Lng: l["longitude"].(float64),
+		}
+		// log.Printf("Geolite2: %v\n", geolite2.Geolite2["location"])
+		log.Printf("Geolite2 Lat/Lng: %v for IP %s\n", geolite2Location, ip)
 		// Distance based matching
+		for i, location := range locations {
+			log.Printf("Geocoded via Google %s, %s #%d Lat/Long %v", city,
+				countryCode, i+1, location)
+		}
 	}
 
 	return match_found

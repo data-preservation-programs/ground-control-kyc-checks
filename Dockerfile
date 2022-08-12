@@ -17,8 +17,7 @@ RUN go mod download
 COPY cmd ./cmd
 COPY internal ./internal
 COPY testdata ./testdata
-COPY minpower ./minpower
-COPY geoip ./geoip
+COPY checks ./checks
 
 RUN go build -o sp-kyc-checks cmd/main.go 
 
