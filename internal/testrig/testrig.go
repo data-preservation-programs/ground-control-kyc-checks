@@ -33,7 +33,8 @@ type ResponseResult struct {
 	MinerCheckResults []MinerCheckResult
 }
 
-func RunChecksForFormResponses(ctx context.Context, filename string) (string, error) {
+func RunChecksForFormResponses(ctx context.Context, filename string,
+	forceEpoch bool) (string, error) {
 	responsesJsonBytes, err := os.ReadFile(filename)
 	if err != nil {
 		return "", err
@@ -70,7 +71,7 @@ func RunChecksForFormResponses(ctx context.Context, filename string) (string, er
 			countrycode := response[fmt.Sprintf("%d_country", i)]
 			log.Printf("Miner %d: %s - %s, %s\n", i, minerID, city, countrycode)
 			miner := Miner{minerID, city, countrycode}
-			success, testOutput, err := test_miner(ctx, miner)
+			success, testOutput, err := test_miner(ctx, miner, forceEpoch)
 			log.Printf("Result: %v\n", success)
 			if err != nil {
 				log.Printf("Error: %v\n", err)
@@ -139,7 +140,8 @@ type TestOutput struct {
 	Output  *string `json:",omitempty"`
 }
 
-func test_miner(ctx context.Context, miner Miner) (bool, []TestOutput, error) {
+func test_miner(ctx context.Context, miner Miner, forceEpoch bool) (bool,
+	[]TestOutput, error) {
 	cmd := exec.CommandContext(
 		ctx,
 		"go",
@@ -156,6 +158,9 @@ func test_miner(ctx context.Context, miner Miner) (bool, []TestOutput, error) {
 		"IPS_GEOLITE2=../../downloads/ips-geolite2-latest.json",
 		"IPS_BAIDU=../../downloads/ips-baidu-latest.json",
 	)
+	if forceEpoch {
+		cmd.Env = append(cmd.Env, "EPOCH=205500") // To match JSON files for testing
+	}
 	out, err := cmd.Output()
 	lines := strings.Split(string(out), "\n")
 	var outputLines []TestOutput

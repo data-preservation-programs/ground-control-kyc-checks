@@ -76,18 +76,24 @@ func geocodeAddress(address string) ([]geodist.Coord, error) {
 	return locations, nil
 }
 
-func (g *GeoData) filterByMinerID(minerID string) *GeoData {
+func (g *GeoData) filterByMinerID(minerID string, currentEpoch int64) *GeoData {
+	minEpoch := currentEpoch - 14*24*60*2 // 2 weeks
 	multiaddrsIPs := []MultiaddrsIPsRecord{}
 	ipsGeoLite2 := make(map[string]IPsGeolite2Record)
 	ipsBaidu := make(map[string]IPsBaiduRecord)
 	for _, m := range g.MultiaddrsIPs {
 		if m.Miner == minerID {
-			multiaddrsIPs = append(multiaddrsIPs, m)
-			if r, ok := g.IPsGeolite2[m.IP]; ok {
-				ipsGeoLite2[m.IP] = r
-			}
-			if r, ok := g.IPsBaidu[m.IP]; ok {
-				ipsBaidu[m.IP] = r
+			if int64(m.Epoch) < minEpoch {
+				log.Printf("IP address %s rejected, too old: %d < %d\n",
+					m.IP, m.Epoch, minEpoch)
+			} else {
+				multiaddrsIPs = append(multiaddrsIPs, m)
+				if r, ok := g.IPsGeolite2[m.IP]; ok {
+					ipsGeoLite2[m.IP] = r
+				}
+				if r, ok := g.IPsBaidu[m.IP]; ok {
+					ipsBaidu[m.IP] = r
+				}
 			}
 		}
 	}
@@ -100,14 +106,20 @@ func (g *GeoData) filterByMinerID(minerID string) *GeoData {
 }
 
 // GeoMatchExists checks if the miner has an IP address with a location close to the city/country
-func GeoMatchExists(geodata *GeoData, minerID string, city string, countryCode string) bool {
-	g := geodata.filterByMinerID(minerID)
+func GeoMatchExists(geodata *GeoData, currentEpoch int64, minerID string,
+	city string, countryCode string) bool {
+
+	log.Printf("Searching for geo matches for %s (%s, %s)", minerID,
+		city, countryCode)
+	g := geodata.filterByMinerID(minerID, currentEpoch)
 
 	var match_found bool = false
 	if countryCode != "CN" {
 		for ip, geolite2 := range g.IPsGeolite2 {
 			// Match country
 			if geolite2.Country != countryCode {
+				log.Printf("No country match for %s (%s != GeoLite2:%s), IP: %s\n",
+					minerID, countryCode, geolite2.Country, ip)
 				continue
 			}
 			log.Printf("Matching country for %s (%s) found, IP: %s\n",
@@ -115,7 +127,7 @@ func GeoMatchExists(geodata *GeoData, minerID string, city string, countryCode s
 
 			// Try to match city
 			if geolite2.City == city {
-				log.Printf("Matching city for %s (%s) found, IP: %s\n",
+				log.Printf("Match found! %s matches city name (%s), IP: %s\n",
 					minerID, city, ip)
 				match_found = true
 				continue
@@ -157,7 +169,7 @@ func GeoMatchExists(geodata *GeoData, minerID string, city string, countryCode s
 		for ip, baidu := range g.IPsBaidu {
 			// Try to match city
 			if baidu.City == city {
-				log.Printf("Matching city for %s (%s) found, IP: %s\n",
+				log.Printf("Match found! %s matches city name (%s), IP: %s\n",
 					minerID, city, ip)
 				match_found = true
 				continue
@@ -207,5 +219,8 @@ func GeoMatchExists(geodata *GeoData, minerID string, city string, countryCode s
 		}
 	}
 
+	if !match_found {
+		log.Println("No match found.")
+	}
 	return match_found
 }
