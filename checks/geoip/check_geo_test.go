@@ -55,14 +55,12 @@ func TestGeoMatchExists(t *testing.T) {
 				countryCode: "CA",
 				want:        false,
 			},
-			/*
-				TestCase{ // China
-					minerID:     "f0478563",
-					city:        "Hangzhou",
-					countryCode: "CN",
-					want:        true,
-				},
-			*/
+			TestCase{ // China
+				minerID:     "f0478563",
+				city:        "Hangzhou",
+				countryCode: "CN",
+				want:        true,
+			},
 		)
 	} else {
 		cases = append(cases, TestCase{minerID, city, countryCode, true})

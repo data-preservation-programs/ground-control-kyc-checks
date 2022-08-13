@@ -46,4 +46,13 @@ func TestResponses(t *testing.T) {
 
 	results = runTestFile("responses-3-empty")
 	assert.Empty(t, results)
+
+	results = runTestFile("responses-4-china")
+	assert.Equal(t, len(results), 1)
+	for _, result := range results {
+		for _, minerCheckResult := range result.MinerCheckResults {
+			assert.True(t, minerCheckResult.Success)
+		}
+	}
+
 }
