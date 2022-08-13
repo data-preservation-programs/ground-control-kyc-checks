@@ -3,10 +3,14 @@ description: Perform KYC checks against form submissions for Filecoin Storage Pr
 inputs:
   google-form-responses:
     required: true
+  google-maps-api-key:
+    required: true
 runs:
   using: docker
   image: Dockerfile
   entrypoint: /bin/sh
+  env:
+    GOOGLE_MAPS_API_KEY: ${{ inputs.google-maps-api-key }}
   args:
     - "-c"
     - mkdir -p output; (cd /usr/src/app && ./sp-kyc-checks ${{ inputs.google-form-responses }}) | tee output/test-results.json
