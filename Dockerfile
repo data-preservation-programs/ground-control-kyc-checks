@@ -21,6 +21,6 @@ COPY checks ./checks
 
 RUN go build -o sp-kyc-checks cmd/main.go 
 
-RUN go test ./...
+RUN GOOGLE_MAPS_API_KEY=skip go test ./...
 
 CMD /usr/src/app/sp-kyc-checks testdata/responses-1-pass.json | tee test-results.json

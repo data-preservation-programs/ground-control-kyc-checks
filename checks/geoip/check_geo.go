@@ -37,7 +37,10 @@ func LoadGeoData() (*GeoData, error) {
 func geocodeAddress(address string) ([]geodist.Coord, error) {
 	key := os.Getenv("GOOGLE_MAPS_API_KEY")
 	if key == "" {
-		log.Println("Warning! Missing GOOGLE_MAPS_API_KEY")
+		log.Fatalf("Missing GOOGLE_MAPS_API_KEY")
+	}
+	if key == "skip" {
+		log.Println("Warning: GOOGLE_MAPS_API_KEY set to 'skip'")
 		return []geodist.Coord{}, nil
 	}
 	c, err := maps.NewClient(maps.WithAPIKey(key))
