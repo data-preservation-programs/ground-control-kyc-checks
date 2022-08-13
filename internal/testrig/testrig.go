@@ -152,6 +152,9 @@ func test_miner(ctx context.Context, miner Miner) (bool, []TestOutput, error) {
 		fmt.Sprintf("MINER_ID=%s", miner.MinerID),
 		fmt.Sprintf("CITY=%s", miner.City),
 		fmt.Sprintf("COUNTRY_CODE=%s", miner.CountryCode),
+		"MULTIADDRS_IPS=../../downloads/multiaddrs-ips-latest.json",
+		"IPS_GEOLITE2=../../downloads/ips-geolite2-latest.json",
+		"IPS_BAIDU=../../downloads/ips-baidu-latest.json",
 	)
 	out, err := cmd.Output()
 	lines := strings.Split(string(out), "\n")

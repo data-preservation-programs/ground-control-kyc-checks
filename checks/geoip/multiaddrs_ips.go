@@ -22,7 +22,10 @@ type MultiaddrsIPsRecord struct {
 }
 
 func LoadMultiAddrsIPs() ([]MultiaddrsIPsRecord, error) {
-	file := "testdata/multiaddrs-ips-latest.json"
+	file := os.Getenv("MULTIADDRS_IPS")
+	if file == "" {
+		file = "testdata/multiaddrs-ips-latest.json"
+	}
 	bytes, err := os.ReadFile(file)
 	if err != nil {
 		return nil, err
