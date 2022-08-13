@@ -26,6 +26,10 @@ func runTestFile(testFile string) []ResponseResult {
 
 func TestResponses(t *testing.T) {
 
+	if os.Getenv("GOOGLE_MAPS_API_KEY") == "skip" {
+		log.Printf("Warning: Skipping tests because GOOGLE_MAPS_API_KEY set to 'skip'")
+		return
+	}
 	os.Chdir("../..")
 
 	results := runTestFile("responses-1-pass")

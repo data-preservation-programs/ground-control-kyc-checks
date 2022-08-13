@@ -171,7 +171,6 @@ func GeoMatchExists(geodata *GeoData, minerID string, city string, countryCode s
 			}
 
 			baiduContent := baidu.Baidu["content"].(map[string]interface{})
-			// baiduPoint := baiduContent["point"].(map[string]string)
 			baiduPoint := baiduContent["point"].(map[string]interface{})
 			lon, err := strconv.ParseFloat(baiduPoint["x"].(string), 64)
 			if err != nil {

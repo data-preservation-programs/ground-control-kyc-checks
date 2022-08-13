@@ -1,6 +1,7 @@
 package geoip
 
 import (
+	"log"
 	"os"
 	"testing"
 
@@ -43,25 +44,32 @@ func TestGeoMatchExists(t *testing.T) {
 					want:        true,
 				},
 			*/
-			TestCase{ // Distance match, 500km
-				minerID:     "f01558688",
-				city:        "Montreal",
-				countryCode: "CA",
-				want:        true,
-			},
-			TestCase{ // More than 500 km
-				minerID:     "f01558688",
-				city:        "Toronto",
-				countryCode: "CA",
-				want:        false,
-			},
-			TestCase{ // China
-				minerID:     "f0478563",
-				city:        "Hangzhou",
-				countryCode: "CN",
-				want:        true,
-			},
 		)
+		if os.Getenv("GOOGLE_MAPS_API_KEY") == "skip" {
+			log.Println("Warning: Skipping tests as GOOGLE_MAP_API_KEY set to 'skip'")
+		} else {
+			cases = append(
+				cases,
+				TestCase{ // Distance match, 500km
+					minerID:     "f01558688",
+					city:        "Montreal",
+					countryCode: "CA",
+					want:        true,
+				},
+				TestCase{ // More than 500 km
+					minerID:     "f01558688",
+					city:        "Toronto",
+					countryCode: "CA",
+					want:        false,
+				},
+				TestCase{ // China
+					minerID:     "f0478563",
+					city:        "Hangzhou",
+					countryCode: "CN",
+					want:        true,
+				},
+			)
+		}
 	} else {
 		cases = append(cases, TestCase{minerID, city, countryCode, true})
 	}
