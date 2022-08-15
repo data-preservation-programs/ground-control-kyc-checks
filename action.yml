@@ -5,12 +5,18 @@ inputs:
     required: true
   google-maps-api-key:
     required: true
+  maxmind-user-id:
+    required: true
+  maxmind-license-key:
+    required: true
 runs:
   using: docker
   image: Dockerfile
   entrypoint: /bin/sh
   env:
     GOOGLE_MAPS_API_KEY: ${{ inputs.google-maps-api-key }}
+    MAXMIND_USER_ID=${{ inputs.maxmind-user-id }}
+    MAXMIND_LICENSE_KEY=${{ inputs.maxmind-license-key }}
   args:
     - "-c"
     - mkdir -p output; (cd /usr/src/app && ./sp-kyc-checks ${{ inputs.google-form-responses }}) | tee output/test-results.json
