@@ -150,6 +150,7 @@ func GeoMatchExists(ctx context.Context, geodata *GeoData,
 		}
 
 		// Second, try with GeoIP2 API data
+		provisional_match := false
 	GEOIP2_LOOP:
 		for ip, geoip2 := range g.IPsGeoIP2 {
 			// Match country
@@ -172,6 +173,9 @@ func GeoMatchExists(ctx context.Context, geodata *GeoData,
 			}
 			log.Printf("No GeoIP2 city match for %s (%s != GeoIP2:%s), IP: %s\n",
 				minerID, city, geoip2.City.Names["en"], ip)
+			if geoip2.City.Names["en"] == "" {
+				provisional_match = true
+			}
 
 			// Try to match based on Lat/Lng
 			geoip2Location := geodist.Coord{
@@ -197,6 +201,12 @@ func GeoMatchExists(ctx context.Context, geodata *GeoData,
 					log.Printf("No match, distance %f km > %d km\n", distance, MAX_DISTANCE)
 				}
 			}
+		}
+		if provisional_match {
+			log.Printf("Match found! %s had GeoIP2 entries that matched country, "+
+				"all with no city data.\n",
+				minerID)
+			match_found = true
 		}
 	} else {
 		for ip, baidu := range g.IPsBaidu {

@@ -53,6 +53,12 @@ func TestGeoMatchExists(t *testing.T) {
 					countryCode: "US",
 					want:        true,
 				},
+				TestCase{ // Has GeoIP2 data, but no city
+					minerID:     "f01873432",
+					city:        "Las Vegas",
+					countryCode: "US",
+					want:        true,
+				},
 			)
 		}
 		if os.Getenv("GOOGLE_MAPS_API_KEY") == "skip" {
