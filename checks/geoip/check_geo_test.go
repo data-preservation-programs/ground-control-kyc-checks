@@ -41,15 +41,20 @@ func TestGeoMatchExists(t *testing.T) {
 				countryCode: "CA",
 				want:        false,
 			},
-			/*
-				TestCase{ // No GeoLite2 city
-					minerID:     "f01660837",
-					city:        "Las Vegas",
+		)
+		if os.Getenv("MAXMIND_USER_ID") == "skip" {
+			log.Println("Warning: Skipping tests as MAXMIND_USER_ID set to 'skip'")
+		} else {
+			cases = append(
+				cases,
+				TestCase{ // No GeoLite2 city, but has GeoIP2 data
+					minerID:     "f01736668",
+					city:        "Omaha",
 					countryCode: "US",
 					want:        true,
 				},
-			*/
-		)
+			)
+		}
 		if os.Getenv("GOOGLE_MAPS_API_KEY") == "skip" {
 			log.Println("Warning: Skipping tests as GOOGLE_MAP_API_KEY set to 'skip'")
 		} else {
