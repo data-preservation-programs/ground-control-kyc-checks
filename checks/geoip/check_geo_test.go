@@ -97,10 +97,12 @@ func TestGeoMatchExists(t *testing.T) {
 	geodata, err := LoadGeoData()
 	assert.Nil(t, err)
 
-	// FIXME: Filter by date
+	geocodeClient, err := getGeocodeClient()
+	assert.Nil(t, err)
 
 	for _, c := range cases {
-		ok := GeoMatchExists(geodata, currentEpoch, c.minerID, c.city, c.countryCode)
+		ok := GeoMatchExists(geodata, geocodeClient, currentEpoch,
+			c.minerID, c.city, c.countryCode)
 		assert.Equal(t, c.want, ok)
 	}
 }

@@ -6,9 +6,10 @@ require (
 	github.com/filecoin-project/go-address v0.0.6
 	github.com/filecoin-project/go-jsonrpc v0.1.6
 	github.com/filecoin-project/lotus v1.16.1
+	github.com/jftuga/geodist v1.0.0
+	github.com/savaki/geoip2 v0.0.0-20150727150920-9968b08fbf39
 	github.com/stretchr/testify v1.7.1
 	googlemaps.github.io/maps v1.3.2
-	github.com/jftuga/geodist v1.0.0
 )
 
 require (
@@ -86,7 +87,6 @@ require (
 	github.com/ipld/go-ipld-prime v0.16.0 // indirect
 	github.com/jbenet/goprocess v0.1.4 // indirect
 	github.com/jessevdk/go-flags v1.4.0 // indirect
-	github.com/jftuga/geodist v1.0.0 // indirect
 	github.com/jpillora/backoff v1.0.0 // indirect
 	github.com/klauspost/cpuid/v2 v2.0.12 // indirect
 	github.com/libp2p/go-buffer-pool v0.0.2 // indirect
@@ -148,3 +148,5 @@ require (
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 	lukechampine.com/blake3 v1.1.7 // indirect
 )
+
+replace github.com/savaki/geoip2 => github.com/jimpick/geoip2 v0.0.0-20220814230921-079c9c01a0be

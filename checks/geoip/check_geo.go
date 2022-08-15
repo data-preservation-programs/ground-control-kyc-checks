@@ -1,10 +1,8 @@
 package geoip
 
 import (
-	"context"
 	"fmt"
 	"log"
-	"os"
 	"strconv"
 
 	"github.com/jftuga/geodist"
@@ -42,40 +40,6 @@ func LoadGeoData() (*GeoData, error) {
 	}, nil
 }
 
-func geocodeAddress(address string) ([]geodist.Coord, error) {
-	key := os.Getenv("GOOGLE_MAPS_API_KEY")
-	if key == "" {
-		log.Fatalf("Missing GOOGLE_MAPS_API_KEY")
-	}
-	if key == "skip" {
-		log.Println("Warning: GOOGLE_MAPS_API_KEY set to 'skip'")
-		return []geodist.Coord{}, nil
-	}
-	c, err := maps.NewClient(maps.WithAPIKey(key))
-	if err != nil {
-		return []geodist.Coord{}, err
-	}
-
-	r := &maps.GeocodingRequest{
-		Address: address,
-	}
-	resp, err := c.Geocode(context.Background(), r)
-	if err != nil {
-		return []geodist.Coord{}, err
-	}
-
-	var locations []geodist.Coord
-	for _, r := range resp {
-		location := geodist.Coord{
-			Lat: r.Geometry.Location.Lat,
-			Lon: r.Geometry.Location.Lng,
-		}
-		locations = append(locations, location)
-	}
-
-	return locations, nil
-}
-
 func (g *GeoData) filterByMinerID(minerID string, currentEpoch int64) *GeoData {
 	minEpoch := currentEpoch - 14*24*60*2 // 2 weeks
 	multiaddrsIPs := []MultiaddrsIPsRecord{}
@@ -106,8 +70,8 @@ func (g *GeoData) filterByMinerID(minerID string, currentEpoch int64) *GeoData {
 }
 
 // GeoMatchExists checks if the miner has an IP address with a location close to the city/country
-func GeoMatchExists(geodata *GeoData, currentEpoch int64, minerID string,
-	city string, countryCode string) bool {
+func GeoMatchExists(geodata *GeoData, geocodeClient *maps.Client,
+	currentEpoch int64, minerID string, city string, countryCode string) bool {
 
 	log.Printf("Searching for geo matches for %s (%s, %s)", minerID,
 		city, countryCode)
@@ -135,7 +99,8 @@ func GeoMatchExists(geodata *GeoData, currentEpoch int64, minerID string,
 			log.Printf("No city match for %s (%s != GeoLite2:%s), IP: %s\n",
 				minerID, city, geolite2.City, ip)
 
-			locations, err := geocodeAddress(fmt.Sprintf("%s, %s", city, countryCode))
+			locations, err := geocodeAddress(geocodeClient,
+				fmt.Sprintf("%s, %s", city, countryCode))
 			if err != nil {
 				log.Fatalf("Geocode error: %s", err)
 			}
@@ -177,7 +142,8 @@ func GeoMatchExists(geodata *GeoData, currentEpoch int64, minerID string,
 			log.Printf("No city match for %s (%s != Baidu:%s), IP: %s\n",
 				minerID, city, baidu.City, ip)
 
-			locations, err := geocodeAddress(fmt.Sprintf("%s, %s", city, countryCode))
+			locations, err := geocodeAddress(geocodeClient, fmt.Sprintf("%s, %s",
+				city, countryCode))
 			if err != nil {
 				log.Fatalf("Geocode error: %s", err)
 			}
