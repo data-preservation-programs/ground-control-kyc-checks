@@ -1,11 +1,13 @@
 package geoip
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"strconv"
 
 	"github.com/jftuga/geodist"
+	"github.com/savaki/geoip2"
 	"googlemaps.github.io/maps"
 )
 
@@ -15,6 +17,7 @@ type GeoData struct {
 	MultiaddrsIPs []MultiaddrsIPsRecord
 	IPsGeolite2   map[string]IPsGeolite2Record
 	IPsBaidu      map[string]IPsBaiduRecord
+	IPsGeoIP2     map[string]geoip2.Response
 }
 
 func LoadGeoData() (*GeoData, error) {
@@ -37,14 +40,17 @@ func LoadGeoData() (*GeoData, error) {
 		multiaddrsIPs,
 		ipsGeolite2,
 		ipsBaidu,
+		make(map[string]geoip2.Response),
 	}, nil
 }
 
-func (g *GeoData) filterByMinerID(minerID string, currentEpoch int64) *GeoData {
+func (g *GeoData) filterByMinerID(ctx context.Context, minerID string,
+	currentEpoch int64) (*GeoData, error) {
 	minEpoch := currentEpoch - 14*24*60*2 // 2 weeks
 	multiaddrsIPs := []MultiaddrsIPsRecord{}
 	ipsGeoLite2 := make(map[string]IPsGeolite2Record)
 	ipsBaidu := make(map[string]IPsBaiduRecord)
+	ipsGeoIP2 := make(map[string]geoip2.Response)
 	for _, m := range g.MultiaddrsIPs {
 		if m.Miner == minerID {
 			if int64(m.Epoch) < minEpoch {
@@ -58,6 +64,12 @@ func (g *GeoData) filterByMinerID(minerID string, currentEpoch int64) *GeoData {
 				if r, ok := g.IPsBaidu[m.IP]; ok {
 					ipsBaidu[m.IP] = r
 				}
+				r, err := getGeoIP2(ctx, m.IP)
+				if err != nil {
+					return &GeoData{}, err
+				}
+				ipsGeoIP2[m.IP] = r
+				log.Println("Jim maxmind", r)
 			}
 		}
 	}
@@ -66,16 +78,21 @@ func (g *GeoData) filterByMinerID(minerID string, currentEpoch int64) *GeoData {
 		multiaddrsIPs,
 		ipsGeoLite2,
 		ipsBaidu,
-	}
+		ipsGeoIP2,
+	}, nil
 }
 
 // GeoMatchExists checks if the miner has an IP address with a location close to the city/country
-func GeoMatchExists(geodata *GeoData, geocodeClient *maps.Client,
-	currentEpoch int64, minerID string, city string, countryCode string) bool {
+func GeoMatchExists(ctx context.Context, geodata *GeoData,
+	geocodeClient *maps.Client, currentEpoch int64, minerID string, city string,
+	countryCode string) (bool, error) {
 
 	log.Printf("Searching for geo matches for %s (%s, %s)", minerID,
 		city, countryCode)
-	g := geodata.filterByMinerID(minerID, currentEpoch)
+	g, err := geodata.filterByMinerID(ctx, minerID, currentEpoch)
+	if err != nil {
+		return false, err
+	}
 
 	var match_found bool = false
 	if countryCode != "CN" {
@@ -99,7 +116,7 @@ func GeoMatchExists(geodata *GeoData, geocodeClient *maps.Client,
 			log.Printf("No city match for %s (%s != GeoLite2:%s), IP: %s\n",
 				minerID, city, geolite2.City, ip)
 
-			locations, err := geocodeAddress(geocodeClient,
+			locations, err := geocodeAddress(ctx, geocodeClient,
 				fmt.Sprintf("%s, %s", city, countryCode))
 			if err != nil {
 				log.Fatalf("Geocode error: %s", err)
@@ -142,7 +159,7 @@ func GeoMatchExists(geodata *GeoData, geocodeClient *maps.Client,
 			log.Printf("No city match for %s (%s != Baidu:%s), IP: %s\n",
 				minerID, city, baidu.City, ip)
 
-			locations, err := geocodeAddress(geocodeClient, fmt.Sprintf("%s, %s",
+			locations, err := geocodeAddress(ctx, geocodeClient, fmt.Sprintf("%s, %s",
 				city, countryCode))
 			if err != nil {
 				log.Fatalf("Geocode error: %s", err)
@@ -188,5 +205,5 @@ func GeoMatchExists(geodata *GeoData, geocodeClient *maps.Client,
 	if !match_found {
 		log.Println("No match found.")
 	}
-	return match_found
+	return match_found, nil
 }

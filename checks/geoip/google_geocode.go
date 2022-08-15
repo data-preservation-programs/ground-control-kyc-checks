@@ -21,7 +21,8 @@ func getGeocodeClient() (*maps.Client, error) {
 	return maps.NewClient(maps.WithAPIKey(key))
 }
 
-func geocodeAddress(client *maps.Client, address string) ([]geodist.Coord, error) {
+func geocodeAddress(ctx context.Context, client *maps.Client,
+	address string) ([]geodist.Coord, error) {
 	if client == nil {
 		return []geodist.Coord{}, nil
 	}
@@ -29,7 +30,7 @@ func geocodeAddress(client *maps.Client, address string) ([]geodist.Coord, error
 	r := &maps.GeocodingRequest{
 		Address: address,
 	}
-	resp, err := client.Geocode(context.Background(), r)
+	resp, err := client.Geocode(ctx, r)
 	if err != nil {
 		return []geodist.Coord{}, err
 	}

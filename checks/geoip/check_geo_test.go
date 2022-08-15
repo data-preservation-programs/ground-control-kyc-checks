@@ -101,8 +101,9 @@ func TestGeoMatchExists(t *testing.T) {
 	assert.Nil(t, err)
 
 	for _, c := range cases {
-		ok := GeoMatchExists(geodata, geocodeClient, currentEpoch,
-			c.minerID, c.city, c.countryCode)
+		ok, err := GeoMatchExists(context.Background(), geodata, geocodeClient,
+			currentEpoch, c.minerID, c.city, c.countryCode)
+		assert.Nil(t, err)
 		assert.Equal(t, c.want, ok)
 	}
 }
