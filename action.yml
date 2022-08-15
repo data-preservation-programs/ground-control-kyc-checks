@@ -19,4 +19,4 @@ runs:
     MAXMIND_LICENSE_KEY: ${{ inputs.maxmind-license-key }}
   args:
     - "-c"
-    - mkdir -p output; (cd /usr/src/app && ./sp-kyc-checks ${{ inputs.google-form-responses }}) | tee output/test-results.json
+    - mkdir -p output; (cd /usr/src/app && ./sp-kyc-checks ${{ inputs.google-form-responses }}) > output/test-results.json
