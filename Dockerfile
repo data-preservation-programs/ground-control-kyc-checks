@@ -21,6 +21,6 @@ COPY checks ./checks
 
 RUN go build -o sp-kyc-checks cmd/main.go 
 
-RUN GOOGLE_MAPS_API_KEY=skip MAXMIND_USER_ID=skip go test ./...
+RUN GOOGLE_MAPS_API_KEY=skip MAXMIND_USER_ID=skip go test ./checks/geoip
 
 CMD /usr/src/app/sp-kyc-checks testdata/responses-1-pass.json | tee test-results.json
