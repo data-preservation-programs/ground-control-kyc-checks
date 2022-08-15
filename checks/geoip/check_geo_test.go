@@ -59,6 +59,18 @@ func TestGeoMatchExists(t *testing.T) {
 					countryCode: "US",
 					want:        true,
 				},
+				TestCase{ // Bad data for country
+					minerID:     "f01873432",
+					city:        "Las Vegas",
+					countryCode: "United States",
+					want:        true,
+				},
+				TestCase{ // Bad data for country
+					minerID:     "f01558688",
+					city:        "Montreal",
+					countryCode: "Canada",
+					want:        true,
+				},
 			)
 		}
 		if os.Getenv("GOOGLE_MAPS_API_KEY") == "skip" {

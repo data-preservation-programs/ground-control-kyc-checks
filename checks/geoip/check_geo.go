@@ -86,6 +86,14 @@ func GeoMatchExists(ctx context.Context, geodata *GeoData,
 	geocodeClient *maps.Client, currentEpoch int64, minerID string, city string,
 	countryCode string) (bool, error) {
 
+	// Quick fixes for bad input data
+	if countryCode == "United States" || countryCode == "San Jose, CA" {
+		countryCode = "US"
+	}
+	if countryCode == "Canada" {
+		countryCode = "CA"
+	}
+
 	log.Printf("Searching for geo matches for %s (%s, %s)", minerID,
 		city, countryCode)
 	g, err := geodata.filterByMinerID(ctx, minerID, currentEpoch)
