@@ -101,6 +101,11 @@ func GeoMatchExists(ctx context.Context, geodata *GeoData,
 		return false, err
 	}
 
+	if len(g.MultiaddrsIPs) == 0 {
+		log.Printf("No Multiaddrs/IPs found for %s\n", minerID)
+		return false, nil
+	}
+
 	locations, err := geocodeAddress(ctx, geocodeClient,
 		fmt.Sprintf("%s, %s", city, countryCode))
 	if err != nil {

@@ -41,6 +41,12 @@ func TestGeoMatchExists(t *testing.T) {
 				countryCode: "CA",
 				want:        false,
 			},
+			TestCase{ // No IPs
+				minerID:     "f01095710",
+				city:        "Wuzheng",
+				countryCode: "CN",
+				want:        false,
+			},
 		)
 		if os.Getenv("MAXMIND_USER_ID") == "skip" {
 			log.Println("Warning: Skipping tests as MAXMIND_USER_ID set to 'skip'")
