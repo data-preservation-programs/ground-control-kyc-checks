@@ -22,9 +22,9 @@ func getGeocodeClient() (*maps.Client, error) {
 }
 
 func geocodeAddress(ctx context.Context, client *maps.Client,
-	address string) ([]geodist.Coord, error) {
+	address string) ([]geodist.Coord, []maps.GeocodingResult, error) {
 	if client == nil {
-		return []geodist.Coord{}, nil
+		return []geodist.Coord{}, []maps.GeocodingResult{}, nil
 	}
 
 	r := &maps.GeocodingRequest{
@@ -32,7 +32,7 @@ func geocodeAddress(ctx context.Context, client *maps.Client,
 	}
 	resp, err := client.Geocode(ctx, r)
 	if err != nil {
-		return []geodist.Coord{}, err
+		return []geodist.Coord{}, resp, err
 	}
 
 	var locations []geodist.Coord
@@ -44,5 +44,5 @@ func geocodeAddress(ctx context.Context, client *maps.Client,
 		locations = append(locations, location)
 	}
 
-	return locations, nil
+	return locations, resp, nil
 }

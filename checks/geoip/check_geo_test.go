@@ -2,6 +2,8 @@ package geoip
 
 import (
 	"context"
+	"encoding/json"
+	"io/ioutil"
 	"log"
 	"os"
 	"strconv"
@@ -21,6 +23,7 @@ func TestGeoMatchExists(t *testing.T) {
 	minerID := os.Getenv("MINER_ID")
 	city := os.Getenv("CITY")
 	countryCode := os.Getenv("COUNTRY_CODE")
+	extraArtifacts := os.Getenv("EXTRA_ARTIFACTS")
 
 	var currentEpoch int64
 
@@ -130,9 +133,14 @@ func TestGeoMatchExists(t *testing.T) {
 	assert.Nil(t, err)
 
 	for _, c := range cases {
-		ok, err := GeoMatchExists(context.Background(), geodata, geocodeClient,
+		ok, extra, err := GeoMatchExists(context.Background(), geodata, geocodeClient,
 			currentEpoch, c.minerID, c.city, c.countryCode)
 		assert.Nil(t, err)
 		assert.Equal(t, c.want, ok)
+		if extraArtifacts != "" {
+			extraJson, err := json.MarshalIndent(extra, "", "  ")
+			assert.Nil(t, err)
+			ioutil.WriteFile(extraArtifacts, extraJson, 0644)
+		}
 	}
 }

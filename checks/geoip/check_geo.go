@@ -81,10 +81,16 @@ func (g *GeoData) filterByMinerID(ctx context.Context, minerID string,
 	}, nil
 }
 
+type ExtraArtifacts struct {
+	GeoData           *GeoData
+	GeocodeLocations  []geodist.Coord
+	GoogleGeocodeData []maps.GeocodingResult
+}
+
 // GeoMatchExists checks if the miner has an IP address with a location close to the city/country
 func GeoMatchExists(ctx context.Context, geodata *GeoData,
 	geocodeClient *maps.Client, currentEpoch int64, minerID string, city string,
-	countryCode string) (bool, error) {
+	countryCode string) (bool, ExtraArtifacts, error) {
 
 	// Quick fixes for bad input data
 	if countryCode == "United States" || countryCode == "San Jose, CA" {
@@ -97,20 +103,23 @@ func GeoMatchExists(ctx context.Context, geodata *GeoData,
 	log.Printf("Searching for geo matches for %s (%s, %s)", minerID,
 		city, countryCode)
 	g, err := geodata.filterByMinerID(ctx, minerID, currentEpoch)
+	extraArtifacts := ExtraArtifacts{GeoData: g}
 	if err != nil {
-		return false, err
+		return false, extraArtifacts, err
 	}
 
 	if len(g.MultiaddrsIPs) == 0 {
 		log.Printf("No Multiaddrs/IPs found for %s\n", minerID)
-		return false, nil
+		return false, extraArtifacts, nil
 	}
 
-	locations, err := geocodeAddress(ctx, geocodeClient,
+	locations, googleResponse, err := geocodeAddress(ctx, geocodeClient,
 		fmt.Sprintf("%s, %s", city, countryCode))
 	if err != nil {
 		log.Fatalf("Geocode error: %s", err)
 	}
+	extraArtifacts.GeocodeLocations = locations
+	extraArtifacts.GoogleGeocodeData = googleResponse
 
 	var match_found bool = false
 	if countryCode != "CN" {
@@ -273,5 +282,5 @@ func GeoMatchExists(ctx context.Context, geodata *GeoData,
 	if !match_found {
 		log.Println("No match found.")
 	}
-	return match_found, nil
+	return match_found, extraArtifacts, nil
 }

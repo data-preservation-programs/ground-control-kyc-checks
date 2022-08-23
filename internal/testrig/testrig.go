@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
@@ -25,7 +26,8 @@ type MinerCheckResult struct {
 	Miner   Miner
 	Success bool
 
-	OutputLines []TestOutput
+	OutputLines    []TestOutput
+	ExtraArtifacts interface{}
 }
 
 type ResponseResult struct {
@@ -71,12 +73,12 @@ func RunChecksForFormResponses(ctx context.Context, filename string,
 			countrycode := response[fmt.Sprintf("%d_country", i)]
 			log.Printf("Miner %d: %s - %s, %s\n", i, minerID, city, countrycode)
 			miner := Miner{minerID, city, countrycode}
-			success, testOutput, err := test_miner(ctx, miner, forceEpoch)
+			success, testOutput, extra, err := test_miner(ctx, miner, forceEpoch)
 			log.Printf("Result: %v\n", success)
 			if err != nil {
 				log.Printf("Error: %v\n", err)
 			}
-			minerCheck := MinerCheckResult{miner, success, testOutput}
+			minerCheck := MinerCheckResult{miner, success, testOutput, extra}
 			minerChecks = append(minerChecks, minerCheck)
 			i++
 		}
@@ -141,7 +143,20 @@ type TestOutput struct {
 }
 
 func test_miner(ctx context.Context, miner Miner, forceEpoch bool) (bool,
-	[]TestOutput, error) {
+	[]TestOutput, interface{}, error) {
+	var outputLines []TestOutput
+	var extra interface{} = nil
+
+	extraArtifacts, err := os.CreateTemp("",
+		fmt.Sprintf("extra-artifacts-%s-*.json", miner.MinerID))
+	if err != nil {
+		return false, outputLines, extra, err
+	}
+	err = extraArtifacts.Close()
+	if err != nil {
+		return false, outputLines, extra, err
+	}
+	defer os.Remove(extraArtifacts.Name())
 	cmd := exec.CommandContext(
 		ctx,
 		"go",
@@ -157,13 +172,14 @@ func test_miner(ctx context.Context, miner Miner, forceEpoch bool) (bool,
 		"MULTIADDRS_IPS=../../downloads/multiaddrs-ips-latest.json",
 		"IPS_GEOLITE2=../../downloads/ips-geolite2-latest.json",
 		"IPS_BAIDU=../../downloads/ips-baidu-latest.json",
+		"EXTRA_ARTIFACTS="+extraArtifacts.Name(),
 	)
+	// fmt.Println("EXTRA_ARTIFACTS", extraArtifacts.Name())
 	if forceEpoch {
 		cmd.Env = append(cmd.Env, "EPOCH=205500") // To match JSON files for testing
 	}
 	out, err := cmd.Output()
 	lines := strings.Split(string(out), "\n")
-	var outputLines []TestOutput
 	for _, line := range lines {
 		log.Println(line)
 		outputLine := TestOutput{}
@@ -173,7 +189,15 @@ func test_miner(ctx context.Context, miner Miner, forceEpoch bool) (bool,
 		}
 	}
 	if err != nil {
-		return false, outputLines, err
+		return false, outputLines, extra, err
 	}
-	return true, outputLines, nil
+	extraData, err := ioutil.ReadFile(extraArtifacts.Name())
+	if err != nil {
+		return false, outputLines, extra, err
+	}
+	err = json.Unmarshal(extraData, &extra)
+	if err != nil {
+		return false, outputLines, extra, err
+	}
+	return true, outputLines, extra, nil
 }
