@@ -188,15 +188,9 @@ func test_miner(ctx context.Context, miner Miner, forceEpoch bool) (bool,
 			outputLines = append(outputLines, outputLine)
 		}
 	}
-	if err != nil {
-		return false, outputLines, extra, err
-	}
-	extraData, err := ioutil.ReadFile(extraArtifacts.Name())
-	if err != nil {
-		return false, outputLines, extra, err
-	}
-	err = json.Unmarshal(extraData, &extra)
-	if err != nil {
+	extraData, err2 := ioutil.ReadFile(extraArtifacts.Name())
+	err3 := json.Unmarshal(extraData, &extra)
+	if err != nil || err2 != nil || err3 != nil {
 		return false, outputLines, extra, err
 	}
 	return true, outputLines, extra, nil
