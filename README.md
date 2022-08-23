@@ -1,16 +1,56 @@
 sp-kyc-checks
 ===
 
-Desired checks:
+Implements "Know Your Customer" checks for Filecoin Storage Providers.
 
-* The adjusted power of the SP is > 10 TiB
-* The Peer ID associated with the miner has a valid multi address
-  * The provider does not have a “delegate” in [this json](https://geoip.feeds.provider.quest/synthetic-country-state-province-locations-latest.json)
-* The ISP is a non-cloud provider
-* The IP address is public
-* The IP address is a likely static IP
-* The location of the IP address is within a 50 km radius of the city self-reported by the SP in the application
-  * If the SP is using a national service that cannot be pinned to a specific city, a PL human’s discretion is needed here
+It is implemented as a GitHub Action.
+
+It takes a JSON file of submitted data with claims about particular
+Miner IDs and their locations (City, Country).
+
+## Implemented Checks
+
+### minpower
+
+Uses the Lotus API to check that the miner ID has a minimum of 10 TiB of Quality
+Adjusted Power on the network.
+
+### geoip
+
+Uses a combination of data sources to determine IP addresses for the Miner ID,
+and checks to see if they match the claimed location.
+
+## Inputs
+
+### `google-form-responses`
+
+**Required** The name of the file with the JSON input data.
+
+### `google-maps-api-key`
+
+**Required** The API key used with the Google Maps API for Geocoding submitted locations.
+
+### `maxmind-user-id`
+
+**Required** The user ID for MaxMind's GeoIP2 service.
+
+### `maxmind-license-key`
+
+**Required** The license key for MaxMind's GeoIP2 service.
+
+## Example usage
+
+Used from a GitHub Actions workflow file:
+
+```
+      - name: Run checks against responses
+        uses: jimpick/sp-kyc-checks@v1.2
+        with:
+          google-form-responses: /github/workspace/output/google-form-responses.json
+          google-maps-api-key: ${{ secrets.GOOGLE_MAPS_API_KEY }}
+          maxmind-user-id: ${{ secrets.MAXMIND_USER_ID }}
+          maxmind-license-key: ${{ secrets.MAXMIND_LICENSE_KEY }}
+```      
 
 ## License
 
