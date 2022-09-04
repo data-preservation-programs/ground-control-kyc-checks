@@ -44,6 +44,12 @@ func TestGeoMatchExists(t *testing.T) {
 				countryCode: "CA",
 				want:        false,
 			},
+			TestCase{
+				minerID:     "f01901765",
+				city:        "Hangzhou",
+				countryCode: "CN",
+				want:        true,
+			},
 			TestCase{ // No IPs
 				minerID:     "f01095710",
 				city:        "Wuzheng",

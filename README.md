@@ -44,7 +44,7 @@ Used from a GitHub Actions workflow file:
 
 ```
       - name: Run checks against responses
-        uses: jimpick/sp-kyc-checks@v1.2
+        uses: jimpick/sp-kyc-checks@HEAD
         with:
           google-form-responses: /github/workspace/output/google-form-responses.json
           google-maps-api-key: ${{ secrets.GOOGLE_MAPS_API_KEY }}
