@@ -95,7 +95,7 @@ func TestGeoMatchExists(t *testing.T) {
 				},
 				TestCase{ // More than 500 km
 					minerID:     "f01558688",
-					city:        "Toronto",
+					city:        "Vancouver",
 					countryCode: "CA",
 					want:        false,
 				},
@@ -103,6 +103,12 @@ func TestGeoMatchExists(t *testing.T) {
 					minerID:     "f01012",
 					city:        "Hangzhou",
 					countryCode: "CN",
+					want:        true,
+				},
+				TestCase{ // China - City Name match, lowercase country code
+					minerID:     "f01012",
+					city:        "Hangzhou",
+					countryCode: "cn",
 					want:        true,
 				},
 				TestCase{ // China - Distance match

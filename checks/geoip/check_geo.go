@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"strings"
 
 	"github.com/jftuga/geodist"
 	"github.com/savaki/geoip2"
@@ -267,6 +268,7 @@ func GeoMatchExists(ctx context.Context, geodata *GeoData,
 	if countryCode == "Canada" {
 		countryCode = "CA"
 	}
+	countryCode = strings.ToUpper(countryCode)
 
 	log.Printf("Searching for geo matches for %s (%s, %s)", minerID,
 		city, countryCode)
