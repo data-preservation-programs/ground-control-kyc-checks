@@ -12,7 +12,7 @@ import (
 	"googlemaps.github.io/maps"
 )
 
-const MAX_DISTANCE = 500
+const MAX_DISTANCE = 600
 
 type GeoData struct {
 	MultiaddrsIPs []MultiaddrsIPsRecord
