@@ -1,4 +1,4 @@
-sp-kyc-checks
+ground-control-kyc-checks
 ===
 
 Implements "Know Your Customer" checks for Filecoin Storage Providers.
@@ -50,7 +50,7 @@ Used from a GitHub Actions workflow file:
           google-maps-api-key: ${{ secrets.GOOGLE_MAPS_API_KEY }}
           maxmind-user-id: ${{ secrets.MAXMIND_USER_ID }}
           maxmind-license-key: ${{ secrets.MAXMIND_LICENSE_KEY }}
-```      
+```
 
 ## License
 

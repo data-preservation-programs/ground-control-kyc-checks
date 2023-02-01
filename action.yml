@@ -1,4 +1,4 @@
-name: sp-kyc-checks
+name: ground-control-kyc-checks
 description: Perform KYC checks against form submissions for Filecoin Storage Providers
 inputs:
   google-form-responses:
@@ -19,4 +19,4 @@ runs:
     MAXMIND_LICENSE_KEY: ${{ inputs.maxmind-license-key }}
   args:
     - "-c"
-    - mkdir -p output; (cd /usr/src/app && ./sp-kyc-checks ${{ inputs.google-form-responses }}) > output/test-results.json
+    - mkdir -p output; (cd /usr/src/app && ./ground-control-kyc-checks ${{ inputs.google-form-responses }}) > output/test-results.json
