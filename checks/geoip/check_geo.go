@@ -45,8 +45,7 @@ func LoadGeoData() (*GeoData, error) {
 	}, nil
 }
 
-func (g *GeoData) filterByMinerID(ctx context.Context, minerID string,
-	currentEpoch int64) (*GeoData, error) {
+func (g *GeoData) filterByMinerID(ctx context.Context, minerID string, currentEpoch int64) (*GeoData, error) {
 	minEpoch := currentEpoch - 14*24*60*2 // 2 weeks
 	multiaddrsIPs := []MultiaddrsIPsRecord{}
 	ipsGeoLite2 := make(map[string]IPsGeolite2Record)
@@ -85,6 +84,7 @@ func (g *GeoData) filterByMinerID(ctx context.Context, minerID string,
 type ExtraArtifacts struct {
 	GeoData           *GeoData
 	GeocodeLocations  []geodist.Coord
+	GeoDataAddresses  []Address
 	GoogleGeocodeData []maps.GeocodingResult
 }
 
@@ -283,12 +283,13 @@ func GeoMatchExists(ctx context.Context, geodata *GeoData,
 		return false, extraArtifacts, nil
 	}
 
-	locations, googleResponse, err := geocodeAddress(ctx, geocodeClient,
+	locations, addresses, googleResponse, err := geocodeAddress(ctx, geocodeClient,
 		fmt.Sprintf("%s, %s", city, countryCode))
 	if err != nil {
 		log.Fatalf("Geocode error: %s", err)
 	}
 	extraArtifacts.GeocodeLocations = locations
+	extraArtifacts.GeoDataAddresses = addresses
 	extraArtifacts.GoogleGeocodeData = googleResponse
 
 	match_found := false
