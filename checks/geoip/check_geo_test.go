@@ -82,7 +82,7 @@ func TestGeoMatchExists(t *testing.T) {
 				},
 			)
 		}
-		if os.Getenv("GOOGLE_MAPS_API_KEY") == "skip" {
+		if false {
 			log.Println("Warning: Skipping tests as GOOGLE_MAP_API_KEY set to 'skip'")
 		} else {
 			cases = append(
